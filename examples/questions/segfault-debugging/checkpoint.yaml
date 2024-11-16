@@ -1,0 +1,139 @@
+uuid: 07173abe-b9d9-4b8a-94f6-6b6ded343883
+title: GDB Debugging Tutorial
+topic: Debugging
+tags:
+  - gdb
+  - debugging
+  - c
+
+image:
+  registry: andylizf
+  name: gdb-tutorial
+  base: ubuntu:22.04
+
+runtime:
+  program: gdb
+  program_args: ["./pwd_checker"]
+  packages:
+    - gdb
+    - gcc
+    - make
+  setup_commands:
+    - gcc -g -o pwd_checker test_pwd_checker.c pwd_checker.c
+
+flags:
+  - title: Start Program
+    prompt: "Mission 1: Start your program"
+    description: |
+      Start your program so that it's at the first line in main, using one command.
+      The program should stop at the first line of main().
+    listener:
+      target: output
+      type: regex
+      match: "main.*test_pwd_checker\\.c:6.*printf\\(\"Running tests"
+
+  - title: Step Over Printf
+    prompt: "Mission 2: Step over printf"
+    description: |
+      The first line in main is a call to printf. 
+      We do not want to step into this function. 
+      Step over this line in the program.
+    listener:
+      target: output
+      type: regex
+      match: "const char \\*test1_first = \"Abraham\";"
+
+  - title: Step to Check Password
+    prompt: "Mission 3: Step until check_password call"
+    description: |
+      Step until the program is on the check_password call. 
+      Note that the line with an arrow next to it is the line we're currently on, 
+      but has not been executed yet.
+    listener:
+      target: output
+      type: regex
+      match: "bool test1 = check_password\\(test1_first, test1_last, test1_pwd\\);"
+
+  - title: Enter Check Password
+    prompt: "Mission 4: Step into check_password"
+    description: |
+      Step into check_password function to examine its implementation.
+    listener:
+      target: output
+      type: regex
+      match: "check_password.*first_name=.*\"Abraham\".*last_name=.*\"Garcia\".*password=.*\"qrtv\\?,mp!ltrA0b13rab4ham\".*pwd_checker\\.c:83.*lower = check_lower"
+
+  - title: Examine Check Lower
+    prompt: "Mission 5: Step into check_lower"
+    description: |
+      Step into check_lower function to examine how it validates password requirements.
+    listener:
+      target: output
+      type: regex
+      match: "check_lower.*password=.*\"qrtv\\?,mp!ltrA0b13rab4ham\".*pwd_checker\\.c:48.*while \\(\\*password != '\\\\0'\\)"
+
+  - title: Print Password
+    prompt: "Mission 6: Print password value"
+    description: |
+      Print the value of password to examine it.
+    listener:
+      target: output
+      type: regex
+      match: "\\$\\d+ = (?:0x[0-9a-f]+ )?\"qrtv\\?,mp!ltrA0b13rab4ham\""
+
+  - title: Exit Check Lower
+    prompt: "Mission 7: Step out of check_lower"
+    description: |
+      Step out of check_lower immediately.
+    listener:
+      target: output
+      type: regex
+      match: "Run till exit from #0\\s+check_lower.*password=.*\"qrtv\\?,mp!ltrA0b13rab4ham\".*pwd_checker\\.c:48.*Value returned is \\$\\d+ = true"
+
+  - title: Debug Check Length
+    prompt: "Mission 8: Step into check_length"
+    description: |
+      Step into check_length function to examine length validation.
+    listener:
+      target: output
+      type: regex
+      match: "check_length.*password=.*\"qrtv\\?,mp!ltrA0b13rab4ham\".*pwd_checker\\.c:23.*int length = strlen\\(password\\)"
+
+  - title: Examine Return
+    prompt: "Mission 9: Step to last line"
+    description: |
+      Step to the last line of the function to examine the return value.
+    listener:
+      target: output
+      type: regex
+      match: "check_length.*pwd_checker\\.c:25.*25\\s+return meets_len_req;"
+
+  - title: Check Return Value
+    prompt: "Mission 10: Print return value"
+    description: |
+      Print the return value of the function. 
+      The return value should be false.
+    listener:
+      target: output
+      type: regex
+      match: "\\$\\d+\\s*=\\s*true"
+
+  - title: Check Length Value
+    prompt: "Mission 11: Print length value"
+    description: |
+      Print the value of length. 
+      It looks like length was correct, so there must be some logic issue on line 24.
+    listener:
+      target: output
+      type: regex
+      match: "\\$\\d+ = 24"
+
+  - title: Exit GDB
+    prompt: "Mission 12: Quit GDB"
+    description: |
+      Quit GDB. GDB might ask you if you want to quit, 
+      type 'y' (but do not add 'y' to ex2_commands.txt).
+    listener:
+      target: output
+      type: regex
+      match: "A debugging session is active.*Inferior.*will be killed.*Quit anyway\\? \\(y or n\\)"
