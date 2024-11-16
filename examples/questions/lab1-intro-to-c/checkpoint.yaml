@@ -1,0 +1,194 @@
+uuid: 07173abe-b9d9-4b8a-94f6-6b6ded343883
+title: GDB Debugging Tutorial
+topic: Debugging
+tags:
+  - gcc
+  - debugging
+  - c
+  - nano
+
+image:
+  registry: melissaf
+  name: lab1intro-to-c
+  base: ubuntu:22.04
+
+runtime:
+  program: gdb
+  program_args: ["./pwd_checker"]
+  packages:
+    - gdb
+    - gcc
+    - make
+    - nano
+  setup_commands:
+    - 
+
+flags:
+  - title: Start Intro to C
+    prompt: "Mission 1: Start Intro to C"
+    description: |
+      In this lab, we will be using the command line program gcc to compile programs in C. Use the gcc command to compile ex1_hello.c into an executable file named a.out. You won't see an output from the gcc command
+    listener:
+      target: output
+      type: regex
+      match: ""
+
+
+  - title: Run executable file
+    prompt: "Mission 2: Run Your First C Program"
+    description: |
+      Confirm that a.out exists in the current directory with the ls command, and then run it with the `./a.out` command.
+      You should see an output of "Hello, World!"
+    listener:
+      target: output
+      type: regex
+      match: Hello, World!"
+
+  - title: Specifying names of executable files
+    prompt: "Mission 3: specifying names of executable files"
+    description: |
+gcc has various command line options which you are encouraged to explore. In lab 1, however, we will only be using -o, which is used to specify the name of the executable file that gcc creates. You don't always want all of your executable files to be named a.out. 
+
+Use the gcc -o command to compile ex1_hello.c into a program named ex1_hello, and then run it with the `./ex1_hello` command.  
+    listener:
+      target: output
+      type: regex
+      match: "Hello, World!"
+
+  - title: Edit your first C program
+    prompt: "Mission 4: Edit your first C program"
+    description: |
+      Use the nano editor to edit ex1_hello.c: `nano ex1_hello.c` (A Nano cheatsheet is available at https://www.nano-editor.org/dist/latest/cheatsheet.html)
+
+      Change the output to "Hello 61C!" Save the file and exit the editor, but do NOT recompile yet. Run the executable with ./ex1_hello. You should still see Hello World, which is the old output.
+    listener:
+      target: output
+      type: regex
+      match: "Hello World!"
+
+  - title: Recompile your program
+    prompt: "Mission 5: Recompile your program"
+    description: |
+      Recompile your program with gcc -o ex1_hello ex1_hello.c. Run the executable with ./ex1_hello. You should see your changes: "Hello 61C!"
+    listener:
+      target: output
+      type: regex
+      match: "Hello 61C!"
+
+  - title: Review Pointers and Arrays
+    prompt: "Mission 6: Review Pointers and Arrays"
+    description: |
+      Edit ex2_pointers_and_functions.c using nano. 
+      `nano ex2_pointers_and_functions.c` and update the blank lines with the correct code. (Feel free to review pointers at https://cs61c.org/fa24/labs/lab01/#review-pointers if you are stuck)
+
+      Save the file and exit the editor.
+      Recompile the program with gcc -o ex2_pointers_and_functions ex2_pointers_and_functions.c.
+
+      Run the executable with ./ex2_pointers_and_functions.
+      You should see the output:
+      add_one: 5
+      add_one_pointer: 6
+    listener:
+      target: output
+      type: regex
+      match: "add_one: 5\nadd_one_pointer: 6"
+
+  - title: Arrays in C
+    prompt: "Mission 7: Arrays in C"
+    description: |
+      Edit ex3_arrays.c using nano. 
+      `nano ex3_arrays.c` and update the blank lines with the correct code.
+
+      Save the file and exit the editor.
+      Recompile the program with `gcc -o ex3_arrays ex3_arrays.c.`
+
+      Run the executable with ./ex3_arrays.
+
+      Compile and run the program and check that the output matches what you expect.
+
+      Read the output of your program. Note that the relationship between the address of the start of the array and the address of index 2 (hint: they're two bytes apart).
+    listener:
+      target: output
+      type: regex
+      match: "address of the start of the array: 0x[0-9a-f]+\naddress of index 2: 0x[0-9a-f]+\nvalue at index 2: 10"
+
+  - title: Pointer Arithmetic
+    prompt: "Mission 8: Pointer Arithmetic"
+    description: |
+      Edit ex4_pointer_arithmetic.c using nano. 
+      `nano ex4_pointer_arithmetic.c` and replace the blank lines with the correct code.
+
+      Save the file and exit the editor.
+      Recompile the program with `gcc -o ex4_pointer_arithmetic ex4_pointer_arithmetic.c.`
+
+      Run the executable with ./ex4_pointer_arithmetic.
+
+      Read the output of your program. Note that the relationship between the address of the start of the array and the address of index 2 is different from the relationship in the previous exercise.
+    listener:
+      target: output
+      type: regex
+      match: "address of the start of the array: 0x[0-9a-f]+\naddress of index 2: 0x[0-9a-f]+\nvalue at index 2: 10"
+
+  - title: Examine Return
+    prompt: "Mission 9: Step to last line"
+    description: |
+      Step to the last line of the function to examine the return value.
+    listener:
+      target: output
+      type: regex
+      match: "check_length.*pwd_checker\\.c:25.*25\\s+return meets_len_req;"
+
+  - title: Strings in C
+    prompt: "Mission 10: Strings in C"
+    description: |
+      Edit ex5_strings.c using nano. 
+      `nano ex5_strings.c` and replace the blank lines with the correct code.
+
+      Save the file and exit the editor.
+      Recompile the program with `gcc -o ex5_strings ex5_strings.c.`
+
+      Run the executable with ./ex5_strings.
+    listener:
+      target: output
+      type: regex
+      match: "prints hello: hello\nlength of hello: 5\nprints world: world\naddress of world_str: 0x[0-9a-f]+\naddress of 'r': 0x[0-9a-f]+\nprints hello world: hello world"
+
+  - title: Copying Strings - Buffer Overflow Error
+    prompt: "Mission 11: Raise Buffer Overflow Error with Strcpy"
+    description: |
+      Fill in the blank lines in ex6_strcpy.c and compile the program.
+      Verify it shows the buffer overflow warning.
+    listener:
+      target: output
+      type: regex
+      match: "ex6_strcpy\\.c: In function 'main':\nex6_strcpy\\.c:24:3: warning: 'strcpy' writing 28 bytes into a region of size 6 overflows the destination \\[-Wstringop-overflow=\\]\n\\s*24 \\|\\s*strcpy\\(message, long_message\\);\n\\s*\\|\\s*\\^~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nex6_strcpy\\.c:8:8: note: destination object 'message' of size 6\n\\s*8 \\|\\s*char message\\[6\\];\n\\s*\\|\\s*\\^~~~~~~"
+
+  - title: Copying Strings - Safely Copy Strings with Strncpy
+    prompt: "Mission 12: Use Strncpy to Safely Copy Strings"
+    description: |
+      Edit ex6_strcpy_fixed.c using nano. 
+      `nano ex6_strcpy_fixed.c` and replace the blank lines with the correct code.
+
+      Save the file and exit the editor.
+      Recompile the program with `gcc -o ex6_strcpy_fixed ex6_strcpy_fixed.c.`
+
+      Run the executable with ./ex6_strcpy_fixed.
+    listener:
+      target: output
+      type: regex
+      match: "Before copying: hello\nAfter copying: Here's"
+  
+  - title: Structs
+    prompt: "Mission 13: Structs"
+    description: |
+      Edit ex7_structs.c using nano. 
+      `nano ex7_structs.c` and replace the blank lines with the correct code.
+
+      Save the file and exit the editor.
+      Recompile the program with `gcc -o ex7_structs ex7_structs.c.`
+
+      Run the executable with ./ex7_structs.
+    listener:
+      target: output
+      type: regex
+      match: "Size of a struct Student: 16 bytes\nStudent's ID: 5"
