@@ -1,8 +1,9 @@
-uuid: 07173abe-b9d9-4b8a-94f6-6b6ded343883
-title: GDB Debugging Tutorial
+uuid: 5f1e8d2b-c7a9-4b6d-82e4-7f3ac9b12def
+title: Segfault Debugging
 topic: Debugging
 tags:
   - gdb
+  - valgrind
   - debugging
   - c
 
@@ -13,35 +14,46 @@ image:
 
 runtime:
   program: gdb
-  program_args: ["./pwd_checker"]
+  program_args: []
   packages:
     - gdb
     - gcc
     - make
+    - valgrind
+    - cgdb
   setup_commands:
     - gcc -g -o pwd_checker test_pwd_checker.c pwd_checker.c
 
 flags:
   - title: Start Program
-    prompt: "Mission 1: Start your program"
+    prompt: "Mission 1: Raise a Segfault"
     description: |
-      Start your program so that it's at the first line in main, using one command.
-      The program should stop at the first line of main().
-    listener:
-      target: output
-      type: regex
-      match: "main.*test_pwd_checker\\.c:6.*printf\\(\"Running tests"
+      One very important thing that GDB can do is debug segfaults. While this exercise is possible to do without using these GDB tools, getting used to this will be very helpful for future problems in the lab as well as Project 1.
 
-  - title: Step Over Printf
-    prompt: "Mission 2: Step over printf"
-    description: |
-      The first line in main is a call to printf. 
-      We do not want to step into this function. 
-      Step over this line in the program.
+      Compile ex5_segfault.c. Notice that there are no compiler errors or warnings, and we're using the -g flag in case we need to debug this program in the future.
+
+      gcc -g -o ex5_segfault ex5_segfault.c
+
+      Run ex5_segfault. The program should crash with a segmentation fault.
+      
     listener:
       target: output
       type: regex
-      match: "const char \\*test1_first = \"Abraham\";"
+      match: "Segmentation fault \\(core dumped\\)" 
+
+  - title: Find the Segfault
+    prompt: "Mission 2: Find the Segfault"
+    description: |
+      run gdb on ex5_segfault, and run until you get to a segmentation fault.
+
+      Please note:
+      What function did the segfault happen in? (The answer should the name of a function)
+      What line number caused the segfault? (The answer should be a single number without any units)
+
+    listener:
+      target: output
+      type: regex
+      match: "Starting program: .+\n\\[Thread debugging using libthread_db enabled\\]\nUsing host libthread_db library \".+\"\n\nProgram received signal SIGSEGV, Segmentation fault.\n0x[0-9a-f]+ in ben \\(arr=0x[0-9a-f]+, size=10\\) at ex5_segfault\\.c:15\n15\\s+\\*ptr = 10;"
 
   - title: Step to Check Password
     prompt: "Mission 3: Step until check_password call"
@@ -63,60 +75,90 @@ flags:
       type: regex
       match: "check_password.*first_name=.*\"Abraham\".*last_name=.*\"Garcia\".*password=.*\"qrtv\\?,mp!ltrA0b13rab4ham\".*pwd_checker\\.c:83.*lower = check_lower"
 
-  - title: Examine Check Lower
-    prompt: "Mission 5: Step into check_lower"
+  - title: Valgrind Setup - Bork
+    prompt: "Mission 5: Run Bork"
     description: |
-      Step into check_lower function to examine how it validates password requirements.
-    listener:
-      target: output
-      type: regex
-      match: "check_lower.*password=.*\"qrtv\\?,mp!ltrA0b13rab4ham\".*pwd_checker\\.c:48.*while \\(\\*password != '\\\\0'\\)"
+      Compile bork.c and run it with an argument `hello`.
 
-  - title: Print Password
-    prompt: "Mission 6: Print password value"
-    description: |
-      Print the value of password to examine it.
-    listener:
-      target: output
-      type: regex
-      match: "\\$\\d+ = (?:0x[0-9a-f]+ )?\"qrtv\\?,mp!ltrA0b13rab4ham\""
+      gcc -g -o bork bork.c
+      ./bork hello
 
-  - title: Exit Check Lower
-    prompt: "Mission 7: Step out of check_lower"
-    description: |
-      Step out of check_lower immediately.
     listener:
       target: output
       type: regex
-      match: "Run till exit from #0\\s+check_lower.*password=.*\"qrtv\\?,mp!ltrA0b13rab4ham\".*pwd_checker\\.c:48.*Value returned is \\$\\d+ = true"
+      match: 'Input string: "hello"\nLength of translated string: \d+\nTranslate to Bork: "[A-Za-z0-9!]+!"'
 
-  - title: Debug Check Length
-    prompt: "Mission 8: Step into check_length"
+  - title: Run Valgrind - Bork
+    prompt: "Mission 6: Run Valgrind on Bork"
     description: |
-      Step into check_length function to examine length validation.
+      Run valgrind on bork with the same argument `hello`.
     listener:
       target: output
       type: regex
-      match: "check_length.*password=.*\"qrtv\\?,mp!ltrA0b13rab4ham\".*pwd_checker\\.c:23.*int length = strlen\\(password\\)"
+      match: "==\\d+== Memcheck, a memory error detector\n==\\d+== Copyright \\(C\\) 2002-2017, and GNU GPL'd, by Julian Seward et al\\.\n==\\d+== .+\n==\\d+== Command: \\.\/bork hello\n==\\d+==\n==\\d+== Invalid read of size 1\n.+\nInput string: \"hello\"\nLength of translated string: 7\n.+\nTranslate to Bork: \"hefllof\"\n.+\n==\\d+== HEAP SUMMARY:\n==\\d+==     in use at exit: 7 bytes in 1 blocks\n==\\d+==   total heap usage: 11 allocs, 10 frees, 1,051 bytes allocated\n==\\d+==\n==\\d+== LEAK SUMMARY:\n==\\d+==    definitely lost: 7 bytes in 1 blocks\n==\\d+==    indirectly lost: 0 bytes in 0 blocks\n==\\d+==      possibly lost: 0 bytes in 0 blocks\n==\\d+==    still reachable: 0 bytes in 0 blocks\n==\\d+==         suppressed: 0 bytes in 0 blocks\n.+\n==\\d+== ERROR SUMMARY: 6 errors from 3 contexts \\(suppressed: 0 from 0\\)"
+  
+  - title: Valgrind - Allocate Null Terminator Space
+    prompt: "Mission 7: Allocate Null Terminator Space"
+    description: |
+      Use valgrind to find where the null terminator is missing.
+      Review the lab notes on how to read through the valgrind output.
 
-  - title: Examine Return
-    prompt: "Mission 9: Step to last line"
-    description: |
-      Step to the last line of the function to examine the return value.
+       It looks like alloc_str is giving us some memory that's only len big, which means when we write to the string in translate_to_bork, we don't have enough space for a null terminator!
+
+       <     return malloc(len*sizeof(char));
+
+       >     char *data = malloc((len+1)*sizeof(char));
+       >     data[len] = '\0';
+       >     return data;
+
+       compile bork.cand run again with the fix.
+
+
     listener:
       target: output
       type: regex
-      match: "check_length.*pwd_checker\\.c:25.*25\\s+return meets_len_req;"
+      match: 'Input string: "hello"\nLength of translated string: 7\nTranslate to Bork: "hefllof"'
+
+  - title: Review with Valgrind - Memory Leak
+    prompt: "Mission 8: Review Code with Valgrind - Memory Leak"
+    description: |
+      Everything looks like it's working properly. However, there could be hidden errors that we cannot see, so let's run our code through valgrind to make sure that there are no underlying issues.
+
+      Run valgrind on bork with the same argument `hello`.
+    listener:
+      target: output
+      type: regex
+      match: match: "==\\d+== Memcheck, a memory error detector\n==\\d+== Copyright \\(C\\) 2002-2017, and GNU GPL'd, by Julian Seward et al\\.\n==\\d+== Using Valgrind-\\d+\\.\\d+\\.\\d+ and LibVEX; rerun with -h for copyright info\n==\\d+== Command: \\.\/bork hello\n==\\d+==\nInput string: \"hello\"\nLength of translated string: 7\nTranslate to Bork: \"hefllof\"\n==\\d+==\n==\\d+== HEAP SUMMARY:\n==\\d+==     in use at exit: 8 bytes in 1 blocks\n==\\d+==   total heap usage: 11 allocs, 10 frees, 1,061 bytes allocated\n==\\d+==\n==\\d+== LEAK SUMMARY:\n==\\d+==    definitely lost: 8 bytes in 1 blocks\n==\\d+==    indirectly lost: 0 bytes in 0 blocks\n==\\d+==      possibly lost: 0 bytes in 0 blocks\n==\\d+==    still reachable: 0 bytes in 0 blocks\n==\\d+==         suppressed: 0 bytes in 0 blocks\n==\\d+== Rerun with --leak-check=full to see details of leaked memory\n==\\d+==\n==\\d+== .+\n==\\d+== ERROR SUMMARY: 0 errors from 0 contexts \\(suppressed: 0 from 0\\)"
+
+  - title: Review Heap Summary with Valgrind
+    prompt: "Mission 9: Review Heap Summary with Valgrind"
+    description: |
+      Take a look at the heap summary. Valgrindtells us that we had 8 bytes in 1 block allocated at the time of exit. This means that the memory in the heap that was not free'd stems from one allocation call and that it is 8 bytes large.
+
+      Next, we can see the heap summary which shows that we made 11 allocation calls and 10 frees over the lifetime of the program.
+
+      Valgrind tells us to "Rerun with --leak-check=full to see details of leaked memory", so let's do that.
+
+      valgrind --leak-check=full ./bork hello
+
+    listener:
+      target: output
+      type: regex
+      match: match: "==\\d+== Memcheck, a memory error detector\n==\\d+== Copyright \\(C\\) 2002-2017, and GNU GPL'd, by Julian Seward et al\\.\n==\\d+== Using Valgrind-\\d+\\.\\d+\\.\\d+ and LibVEX; rerun with -h for copyright info\n==\\d+== Command: \\.\/bork hello\n==\\d+==\nInput string: \"hello\"\nLength of translated string: 7\nTranslate to Bork: \"hefllof\"\n==\\d+==\n==\\d+== HEAP SUMMARY:\n==\\d+==     in use at exit: 8 bytes in 1 blocks\n==\\d+==   total heap usage: 11 allocs, 10 frees, 1,061 bytes allocated\n==\\d+==\n==\\d+== 8 bytes in 1 blocks are definitely lost in loss record 1 of 1\n==\\d+==    at 0x[0-9A-Fa-f]+: malloc \\(in .+\\)\n==\\d+==    by 0x[0-9A-Fa-f]+: alloc_str \\(in .+\\)\n==\\d+==    by 0x[0-9A-Fa-f]+: concat \\(in .+\\)\n==\\d+==    by 0x[0-9A-Fa-f]+: main \\(in .+\\)\n==\\d+==\n==\\d+== LEAK SUMMARY:\n==\\d+==    definitely lost: 8 bytes in 1 blocks\n==\\d+==    indirectly lost: 0 bytes in 0 blocks\n==\\d+==      possibly lost: 0 bytes in 0 blocks\n==\\d+==    still reachable: 0 bytes in 0 blocks\n==\\d+==         suppressed: 0 bytes in 0 blocks\n==\\d+==\n==\\d+== .+\n==\\d+== ERROR SUMMARY: 1 errors from 1 contexts \\(suppressed: 0 from 0\\)"
 
   - title: Check Return Value
     prompt: "Mission 10: Print return value"
     description: |
-      Print the return value of the function. 
-      The return value should be false.
+      Now Valgrind is telling us the location where the unfree'd block was initially allocated. Let's take a look at this below. If we follow the call stack, we can see that malloc was called by alloc_str which was called by concat in main.
+
+      If we look in main, we can see that we allocate the space for dest_str by calling concat, but we never free it. We need dest_str until the end of the program, so let's free it right before we return from main. This struct was allocated on the stack in main (Str dest_str={};), so we do not need to free the struct itself. However, the data that the struct points to was allocated in the heap. Therefore, we only need to free this portion of the struct. If you take a look near the top of the program, we have already provided a function free_Str to free the allocated portion of the struct. 
+      
+      Let's call `free_Str(dest_str); at the end of our program before we return.
+
     listener:
       target: output
       type: regex
-      match: "\\$\\d+\\s*=\\s*true"
+      match: "==\\d+== Memcheck, a memory error detector\n==\\d+== Copyright \\(C\\) 2002-2017, and GNU GPL'd, by Julian Seward et al\\.\n==\\d+== Using Valgrind-\\d+\\.\\d+\\.\\d+ and LibVEX; rerun with -h for copyright info\n==\\d+== Command: \\.\/bork hello\n==\\d+==\nInput string: \"hello\"\nLength of translated string: 7\nTranslate to Bork: \"hefllof\"\n==\\d+==\n==\\d+== HEAP SUMMARY:\n==\\d+==     in use at exit: 0 bytes in 0 blocks\n==\\d+==   total heap usage: 11 allocs, 11 frees, 1,061 bytes allocated\n==\\d+==\n==\\d+== All heap blocks were freed -- no leaks are possible\n==\\d+==\n==\\d+== .+\n==\\d+== ERROR SUMMARY: 0 errors from 0 contexts \\(suppressed: 0 from 0\\)"
 
   - title: Check Length Value
     prompt: "Mission 11: Print length value"
@@ -128,12 +170,14 @@ flags:
       type: regex
       match: "\\$\\d+ = 24"
 
-  - title: Exit GDB
-    prompt: "Mission 12: Quit GDB"
+  - title: Double Pointers
+    prompt: "Mission 12: Double Pointers"
     description: |
-      Quit GDB. GDB might ask you if you want to quit, 
-      type 'y' (but do not add 'y' to ex2_commands.txt).
+      Edit ex8_double_pointers.c using nano and fill in the blanks.
+
+      compile and run the program to get the student IDs      
+
     listener:
       target: output
       type: regex
-      match: "A debugging session is active.*Inferior.*will be killed.*Quit anyway\\? \\(y or n\\)"
+      match: "Student 1's ID: 5\nStudent 2's ID: 6"

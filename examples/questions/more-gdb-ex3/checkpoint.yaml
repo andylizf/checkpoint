@@ -1,25 +1,28 @@
-uuid: 07173abe-b9d9-4b8a-94f6-6b6ded343883
-title: GDB Debugging Tutorial
+uuid: 2f8e5d1c-a3b7-4c9f-85e2-9d4ac12b6789
+title: More GDB Exercises
 topic: Debugging
 tags:
   - gdb
+  - gcc
   - debugging
   - c
 
 image:
   registry: andylizf
-  name: gdb-tutorial
+  name: more-gdb-ex3
   base: ubuntu:22.04
 
 runtime:
-  program: gdb
+  program: cgdb
   program_args: ["./pwd_checker"]
   packages:
     - gdb
     - gcc
     - make
+    - cgdb
   setup_commands:
     - gcc -g -o pwd_checker test_pwd_checker.c pwd_checker.c
+
 
 flags:
   - title: Start Program
