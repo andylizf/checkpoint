@@ -1,27 +1,25 @@
-uuid: 07173abe-b9d9-4b8a-94f6-6b6ded343883
-title: GDB Debugging Tutorial
-topic: Debugging
+uuid:3a7d9f2e-b8c4-4d5a-91f3-8e2bc6d45abc
+title: Intro to C
+topic: Intro to C Basics
 tags:
   - gcc
+  - compiling
   - debugging
   - c
   - nano
 
 image:
-  registry: melissaf
+  registry: andylizf
   name: lab1intro-to-c
   base: ubuntu:22.04
 
 runtime:
-  program: gdb
+  program: gcc
   program_args: ["./pwd_checker"]
   packages:
-    - gdb
     - gcc
     - make
     - nano
-  setup_commands:
-    - 
 
 flags:
   - title: Start Intro to C

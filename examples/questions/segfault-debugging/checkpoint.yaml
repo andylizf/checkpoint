@@ -167,6 +167,7 @@ flags:
       It looks like length was correct, so there must be some logic issue on line 24.
     listener:
       target: output
+    
       type: regex
       match: "\\$\\d+ = 24"
 
